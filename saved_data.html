@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved QR Data</title>
+  <link rel="stylesheet" href="../public/style/saved_data.css">
+</head>
+<body>
+  <div id="logo"><img src="../public/icons/Bharat Electronics.png" alt="logo"></div>
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Part Number</th>
+        <th>Component Type</th>
+        <th>View QR</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+
+  <div id="qrModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <img id="qrCodeImage" src="" alt="QR Code" style="width:100%;">
+      <button id="submitButton">Scan QR</button>
+    </div>
+  </div>
+
+  <div id="scanner" style="display:none;">
+    <video id="video" width="300" height="300"></video>
+    <canvas id="canvas" width="300" height="300" style="display: none;"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <script src="../public/js/load_data.js"></script>
+</body>
+</html>

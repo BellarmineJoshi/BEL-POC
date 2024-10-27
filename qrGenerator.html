@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>QR Generator</title>
+
+    <link rel="stylesheet" href="../public/fonts/material-icon/css/material-design-iconic-font.min.css">
+
+    <link rel="stylesheet" href="../public/style/style.css">
+</head>
+<body>
+    <div id="logo"><img src="../public/icons/Bharat Electronics.png"></div>
+    <div class="main">
+
+        <section class="signup">
+            <div class="container">
+                <div class="signup-content">
+                    <div class="signup-form">
+                        <h2 class="form-title">QR Generator</h2>
+                        <form method="POST" class="register-form" id="qrForm">
+                            <div class="form-group">
+                                <input type="text" name="partNo" id="partNumber" placeholder="Enter part number . . ."/>
+                                <p class="error-message"></p>
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="arrivalDate" id="arrivalDate" placeholder="Enter arrival date . . ."/>
+                                <p class="error-message"></p>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="componentType" id="componentType" placeholder="Type of component . . ."/>
+                                <p class="error-message"></p>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="orderNo" id="orderNo" placeholder="Purchase order number . . ."/>
+                                <p class="error-message"></p>
+                            </div>
+                            <div class="form-group form-button">
+                                <input type="submit" class="form-submit" value="Generate QR"/>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="signup-image">
+                        <figure><img src="../public/icons/qr-code1.png" alt="qr image"></figure>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="../public/vendor2/jquery/jquery.min.js"></script>
+    <script src="../public/js/main.js"></script>
+    <script src="../public/js/qrGenerator.js"></script>
+    <script src="../public/js/detailsfetcher.js" type="module"></script>
+</body>
+</html>

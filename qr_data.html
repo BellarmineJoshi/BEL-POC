@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Data</title>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+  <link rel="stylesheet" href="../public/style/qr_data.css">
+</head>
+<body>
+  <div id="logo"><img src="../public/icons/Bharat Electronics.png" alt="logo"></div>
+  <h1 id="heading"></h1>
+  <div id="qrDetailsAll">
+    <form id="qrDataForm">
+      <label for="partNumber">Part Number:</label>
+      <input type="text" id="partNumber" name="partNumber" readonly><br><br>
+      <label for="arrivalDate">Arrival Date:</label>
+      <input type="text" id="arrivalDate" name="arrivalDate" readonly><br><br>
+      <label for="componentType">Component Type:</label>
+      <input type="text" id="componentType" name="componentType" readonly><br><br>
+      <label for="orderNumber">Order Number:</label>
+      <input type="text" id="orderNumber" name="orderNumber" readonly><br><br>
+    </form>
+
+    <form id="qrDetailsForm">
+      <div id="capacitorDetails" class="hidden">
+        <label for="capacitanceValue">Capacitance Value:</label>
+        <input type="text" id="capacitanceValue" name="capacitanceValue" placeholder="Enter value in μF"><br><br>
+        <label for="leakageCurrent">Leakage Current:</label>
+        <input type="text" id="leakageCurrent" name="leakageCurrent" placeholder="Enter value in mA"><br><br>
+        <label for="voltageRating">Voltage Rating:</label>
+        <input type="text" id="voltageRating" name="voltageRating" placeholder="Enter value in V"><br><br>
+        <label for="physicalCondition">Physical Condition:</label>
+        <select id="physicalCondition">
+          <option value="noCracks">Less Cracks</option>
+          <option value="noBulging">Less Bulging</option>
+          <option value="noCracksNoBulging">No Cracks, No Bulging</option>
+        </select><br><br>
+        <label for="temperatureCoefficient">Temperature Coefficient:</label>
+        <select id="temperatureCoefficient">
+          <option value="withinTolerance">Within Tolerance</option>
+          <option value="untolerable">Untolerable</option>
+        </select><br><br>
+        <button type="button" onclick="submitCapacitorForm()">Download Report</button>
+      </div>
+    </form>
+
+    <form id="qrDetailsForm">
+      <div id="motorDetails" class="hidden">
+        <label for="insulationResistance">Insulation Resistance:</label>
+        <input type="text" id="insulationResistance" name="insulationResistance" placeholder="Enter value in MΩ"><br><br>
+        <label for="vibrationLevels">Vibration Levels:</label>
+        <input type="text" id="vibrationLevels" name="vibrationLevels" placeholder="Enter value in mm/s"><br><br>
+        <label for="noiseLevel">Noise Level:</label>
+        <input type="text" id="noiseLevel" name="noiseLevel" placeholder="Enter value in dB"><br><br>
+        <label for="efficiency">Efficiency:</label>
+        <input type="text" id="efficiency" name="efficiency" placeholder="Enter value in %"><br><br>
+        <label for="physicalConditionMotor">Physical Condition:</label>
+        <select id="physicalConditionMotor">
+          <option value="noVisibleDamage">No Visible Damage</option>
+          <option value="visibleDamage">Visible Damage</option>
+        </select><br><br>
+        <button type="button" onclick="submitMotorForm()">Download Report</button>
+      </div>
+    </form>
+
+    <form id="qrDetailsForm">
+      <div id="gearDetails" class="hidden">
+        <label for="materialIntegrity">Material Integrity:</label>
+        <select id="materialIntegrity">
+          <option value="noVisibleCracks">No Visible Cracks</option>
+          <option value="visibleCracks">Visible Cracks</option>
+        </select><br><br>
+        <label for="toothProfile">Tooth Profile:</label>
+        <select id="toothProfile">
+          <option value="withinSpecification">Within Specification</option>
+          <option value="notAsExpected">Not as Expected</option>
+        </select><br><br>
+        <label for="wearMeasurement">Wear Measurement:</label>
+        <input type="text" id="wearMeasurement" name="wearMeasurement" placeholder="Enter value in mm"><br><br>
+        <label for="lubrication">Lubrication:</label>
+        <select id="lubrication">
+          <option value="adequateLubricationPresent">Adequate Lubrication Present</option>
+          <option value="inadequateLubrication">Inadequate Lubrication</option>
+        </select><br><br>
+        <label for="backlash">Backlash:</label>
+        <input type="text" id="backlash" name="backlash" placeholder="Enter value in mm"><br><br>
+        <button type="button" onclick="submitGearForm()">Download Report</button>
+      </div>
+    </form>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const partNumber = urlParams.get('partNumber') || '';
+      const arrivalDate = urlParams.get('arrivalDate') || '';
+      const componentType = urlParams.get('componentType') || '';
+      const orderNumber = urlParams.get('orderNumber') || '';
+
+      document.getElementById('partNumber').value = partNumber;
+      document.getElementById('arrivalDate').value = arrivalDate;
+      document.getElementById('componentType').value = componentType;
+      document.getElementById('orderNumber').value = orderNumber;
+      
+      document.getElementById('heading').innerHTML = `${partNumber}`;
+
+      if (componentType.trim().toLowerCase() === 'capacitor') {
+        document.getElementById('capacitorDetails').classList.remove('hidden');
+      } else if (componentType.trim().toLowerCase() === 'motor') {
+        document.getElementById('motorDetails').classList.remove('hidden');
+      } else if (componentType.trim().toLowerCase() === 'gear') {
+        document.getElementById('gearDetails').classList.remove('hidden');
+      } else {
+        alert('Invalid QR, Component type is not recognized');
+        window.location.href = 'previous_page.html';
+      }
+    });
+
+    function validateForm(fields) {
+      for (const [key, value] of Object.entries(fields)) {
+        if (!value) {
+          alert(`Please fill all fields. Missing: ${key}`);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function validateNumber(field, name) {
+      if (isNaN(field)) {
+        alert(`${name} should be a number.`);
+        return false;
+      }
+      return true;
+    }
+
+    function validateDecimal(field, name) {
+      if (isNaN(field) || !field.includes('.')) {
+        alert(`${name} should be a decimal number.`);
+        return false;
+      }
+      return true;
+    }
+
+    function validatePercentage(field, name) {
+      if (!/^\d+(\.\d+)?%$/.test(field)) {
+        alert(`${name} should be a percentage value (e.g., 85% or 85.5%).`);
+        return false;
+      }
+      return true;
+    }
+
+    function determineSeverity(param, value) {
+      switch (param) {
+        case "Capacitance Value":
+          return value == 100 ? "Minor" : "Major";
+        case "Leakage Current":
+          return value < 0.5 ? "Minor" : "Major";
+        case "Voltage Rating":
+          return value == 250 ? "Minor" : "Major";
+        case "Physical Condition":
+          return value === "noCracksNoBulging" ? "Major" : "Minor";
+        case "Temperature Coefficient":
+          return value === "withinTolerance" ? "Minor" : "Major";
+        default:
+          return "Unknown";
+      }
+    }
+
+    function determineSeverityMotor(param, value) {
+      switch (param) {
+        case "Insulation Resistance":
+          return value < 5 ? "Minor" : "Major";
+        case "Vibration Levels":
+          return value < 1 ? "Minor" : "Major";
+        case "Noise Level":
+          return value < 70 ? "Minor" : "Major";
+        case "Efficiency":
+          return value > 85 ? "Minor" : "Major";
+        case "Physical Condition":
+          return value === "noVisibleDamage" ? "Major" : "Minor";
+        default:
+          return "Unknown";
+      }
+    }
+
+    function determineSeverityGear(param, value) {
+      switch (param) {
+        case "Material Integrity":
+          return value === "noVisibleCracks" ? "Major" : "Critical";
+        case "Tooth Profile":
+          return value === "withinSpecification" ? "Critical" : "Minor";
+        case "Wear Measurement":
+          return value < 0.5 ? "Minor" : "Major";
+        case "Lubrication":
+          return value === "adequateLubricationPresent" ? "Major" : "Critical";
+        case "Backlash":
+          return value < 0.3 ? "Minor" : "Major";
+        default:
+          return "Unknown";
+      }
+    }
+
+    function passFail(severity) {
+      return severity === "Major" ? "Fail" : "Pass";
+    }
+
+    function addTypeOfDefect(columnData) {
+      return columnData.map(data => {
+        return {
+          ...data,
+          "Type of Defect": data["Pass/Fail"] === "Fail" ? data["Type of Defect"] : undefined
+        };
+      });
+    }
+
+    function submitCapacitorForm() {
+      const partNumber = document.getElementById('partNumber').value;
+      const componentType = document.getElementById('componentType').value;
+      const capacitanceValue = document.getElementById('capacitanceValue').value;
+      const leakageCurrent = document.getElementById('leakageCurrent').value;
+      const voltageRating = document.getElementById('voltageRating').value;
+      const physicalCondition = document.getElementById('physicalCondition').value;
+      const temperatureCoefficient = document.getElementById('temperatureCoefficient').value;
+
+      const fields = { partNumber, componentType, capacitanceValue, leakageCurrent, voltageRating, physicalCondition, temperatureCoefficient };
+      if (!validateForm(fields) || !validateNumber(capacitanceValue, 'Capacitance Value') || !validateDecimal(leakageCurrent, 'Leakage Current') || !validateNumber(voltageRating, 'Voltage Rating')) {
+        return;
+      }
+
+      const capacitorData = [
+        {
+          "Part Number": partNumber,
+          "Component Type": componentType,
+          "Inspection Parameters": "Capacitance Value",
+          "Result": capacitanceValue,
+          "Pass/Fail": passFail(determineSeverity("Capacitance Value", capacitanceValue)),
+          "Type of Defect": determineSeverity("Capacitance Value", capacitanceValue)
+        },
+        {
+          "Inspection Parameters": "Leakage Current",
+          "Result": leakageCurrent,
+          "Pass/Fail": passFail(determineSeverity("Leakage Current", leakageCurrent)),
+          "Type of Defect": determineSeverity("Leakage Current", leakageCurrent)
+        },
+        {
+          "Inspection Parameters": "Voltage Rating",
+          "Result": voltageRating,
+          "Pass/Fail": passFail(determineSeverity("Voltage Rating", voltageRating)),
+          "Type of Defect": determineSeverity("Voltage Rating", voltageRating)
+        },
+        {
+          "Inspection Parameters": "Physical Condition",
+          "Result": physicalCondition,
+          "Pass/Fail": passFail(determineSeverity("Physical Condition", physicalCondition)),
+          "Type of Defect": determineSeverity("Physical Condition", physicalCondition)
+        },
+        {
+          "Inspection Parameters": "Temperature Coefficient",
+          "Result": temperatureCoefficient,
+          "Pass/Fail": passFail(determineSeverity("Temperature Coefficient", temperatureCoefficient)),
+          "Type of Defect": determineSeverity("Temperature Coefficient", temperatureCoefficient)
+        }
+      ];
+
+      const worksheet = XLSX.utils.json_to_sheet(addTypeOfDefect(capacitorData));
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Capacitor Data");
+      XLSX.writeFile(workbook, "CapacitorData.xlsx");
+    }
+
+    function submitMotorForm() {
+      const partNumber = document.getElementById('partNumber').value;
+      const componentType = document.getElementById('componentType').value;
+      const insulationResistance = document.getElementById('insulationResistance').value;
+      const vibrationLevels = document.getElementById('vibrationLevels').value;
+      const noiseLevel = document.getElementById('noiseLevel').value;
+      const efficiency = document.getElementById('efficiency').value;
+      const physicalConditionMotor = document.getElementById('physicalConditionMotor').value;
+
+      const fields = { partNumber, componentType, insulationResistance, vibrationLevels, noiseLevel, efficiency, physicalConditionMotor };
+      if (!validateForm(fields) || !validateNumber(insulationResistance, 'Insulation Resistance') || !validateDecimal(vibrationLevels, 'Vibration Levels') || !validateNumber(noiseLevel, 'Noise Level') || !validatePercentage(efficiency, 'Efficiency')) {
+        return;
+      }
+
+      const motorData = [
+        {
+          "Part Number": partNumber,
+          "Component Type": componentType,
+          "Inspection Parameters": "Insulation Resistance",
+          "Result": insulationResistance,
+          "Pass/Fail": passFail(determineSeverityMotor("Insulation Resistance", insulationResistance)),
+          "Type of Defect": determineSeverityMotor("Insulation Resistance", insulationResistance)
+        },
+        {
+          "Inspection Parameters": "Vibration Levels",
+          "Result": vibrationLevels,
+          "Pass/Fail": passFail(determineSeverityMotor("Vibration Levels", vibrationLevels)),
+          "Type of Defect": determineSeverityMotor("Vibration Levels", vibrationLevels)
+        },
+        {
+          "Inspection Parameters": "Noise Level",
+          "Result": noiseLevel,
+          "Pass/Fail": passFail(determineSeverityMotor("Noise Level", noiseLevel)),
+          "Type of Defect": determineSeverityMotor("Noise Level", noiseLevel)
+        },
+        {
+          "Inspection Parameters": "Efficiency",
+          "Result": efficiency,
+          "Pass/Fail": passFail(determineSeverityMotor("Efficiency", efficiency)),
+          "Type of Defect": determineSeverityMotor("Efficiency", efficiency)
+        },
+        {
+          "Inspection Parameters": "Physical Condition",
+          "Result": physicalConditionMotor,
+          "Pass/Fail": passFail(determineSeverityMotor("Physical Condition", physicalConditionMotor)),
+          "Type of Defect": determineSeverityMotor("Physical Condition", physicalConditionMotor)
+        }
+      ];
+
+      const worksheet = XLSX.utils.json_to_sheet(addTypeOfDefect(motorData));
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Motor Data");
+      XLSX.writeFile(workbook, "MotorData.xlsx");
+    }
+
+    function submitGearForm() {
+      const partNumber = document.getElementById('partNumber').value;
+      const componentType = document.getElementById('componentType').value;
+      const materialIntegrity = document.getElementById('materialIntegrity').value;
+      const toothProfile = document.getElementById('toothProfile').value;
+      const wearMeasurement = document.getElementById('wearMeasurement').value;
+      const lubrication = document.getElementById('lubrication').value;
+      const backlash = document.getElementById('backlash').value;
+
+      const fields = { partNumber, componentType, materialIntegrity, toothProfile, wearMeasurement, lubrication, backlash };
+      if (!validateForm(fields) || !validateNumber(wearMeasurement, 'Wear Measurement') || !validateDecimal(backlash, 'Backlash')) {
+        return;
+      }
+
+      const gearData = [
+        {
+          "Part Number": partNumber,
+          "Component Type": componentType,
+          "Inspection Parameters": "Material Integrity",
+          "Result": materialIntegrity,
+          "Pass/Fail": passFail(determineSeverityGear("Material Integrity", materialIntegrity)),
+          "Type of Defect": determineSeverityGear("Material Integrity", materialIntegrity)
+        },
+        {
+          "Inspection Parameters": "Tooth Profile",
+          "Result": toothProfile,
+          "Pass/Fail": passFail(determineSeverityGear("Tooth Profile", toothProfile)),
+          "Type of Defect": determineSeverityGear("Tooth Profile", toothProfile)
+        },
+        {
+          "Inspection Parameters": "Wear Measurement",
+          "Result": wearMeasurement,
+          "Pass/Fail": passFail(determineSeverityGear("Wear Measurement", wearMeasurement)),
+          "Type of Defect": determineSeverityGear("Wear Measurement", wearMeasurement)
+        },
+        {
+          "Inspection Parameters": "Lubrication",
+          "Result": lubrication,
+          "Pass/Fail": passFail(determineSeverityGear("Lubrication", lubrication)),
+          "Type of Defect": determineSeverityGear("Lubrication", lubrication)
+        },
+        {
+          "Inspection Parameters": "Backlash",
+          "Result": backlash,
+          "Pass/Fail": passFail(determineSeverityGear("Backlash", backlash)),
+          "Type of Defect": determineSeverityGear("Backlash", backlash)
+        }
+      ];
+
+      const worksheet = XLSX.utils.json_to_sheet(addTypeOfDefect(gearData));
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Gear Data");
+      XLSX.writeFile(workbook, "GearData.xlsx");
+    }
+  </script>
+</body>
+</html>
